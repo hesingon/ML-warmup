@@ -1,7 +1,7 @@
 # description of this dataset http://groupware.les.inf.puc-rio.br/har
 from sklearn import datasets
 from sklearn import preprocessing as pp
-from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
@@ -106,12 +106,15 @@ normalized_X = pp.normalize(X)
 
 kfold = KFold(n_splits=10, shuffle=True)
 
+
+
 fold_index = 0
 for train, test in kfold.split(normalized_X):
-    svm = SVC(kernel = 'linear', C = 1).fit(normalized_X[train], y[train])
-    svm_predictions = svm.predict(normalized_X[test])
-    accuracy = svm.score(normalized_X[test], y[test])
-    cm = confusion_matrix(y[test], svm_predictions)
+    clf = MLPClassifier(solver='lbfgs', alpha=1e-5,
+                     hidden_layer_sizes=(5, 2), random_state=1).fit(normalized_X[train], y[train])
+    predictions = clf.predict(normalized_X[test])
+    accuracy = clf.score(normalized_X[test], y[test])
+    cm = confusion_matrix(y[test], predictions)
 
     print('In the %i fold, the classification accuracy is %f' %(fold_index, accuracy))
     print('And the confusion matrix is: ')
