@@ -106,8 +106,6 @@ normalized_X = pp.normalize(X)
 
 kfold = KFold(n_splits=10, shuffle=True)
 
-
-
 fold_index = 0
 for train, test in kfold.split(normalized_X):
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5,
