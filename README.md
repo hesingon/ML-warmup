@@ -4,8 +4,8 @@ This repo contains files that are used to prepare for the demo of the week 6 che
 
 ## info about each files/folders
 
-#### main.py
-contains the codes for demo.
+#### main_svm.py / main_fnn.py
+Demo code using support vector machine model and neural network model.
 
 #### scrap files
 Self-explanatory.
