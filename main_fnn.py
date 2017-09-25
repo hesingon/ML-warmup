@@ -1,4 +1,4 @@
-# description of this dataset http://groupware.les.inf.puc-rio.br/har
+# description of this dataset http://groupware.les.inf.puc-rio.br/har#ixzz2PyRdbAfA
 from sklearn import datasets
 from sklearn import preprocessing as pp
 from sklearn.neural_network import MLPClassifier
@@ -27,13 +27,13 @@ targets = numpy.genfromtxt('subset_target.csv')
 
 ## Display the data to verify the data and targets have the correct number of dimensions.
 
-# print type(data)
-# print data.shape
-# print data
+print type(data)
+print data.shape
+print data
 
-# print type(targets)
-# print targets.shape
-# print targets
+print type(targets)
+print targets.shape
+print targets
 ###############################################
 
 ## Step 0, Data Segmentation
@@ -57,7 +57,6 @@ segs = segment_signal(data)
 # print segs.shape
 # print segs
 ####################################################
-
 
 ## Step 1, Data-Preprosessing
 
@@ -109,7 +108,7 @@ kfold = KFold(n_splits=10, shuffle=True)
 fold_index = 0
 for train, test in kfold.split(normalized_X):
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5,
-                     hidden_layer_sizes=(5, 2), random_state=1).fit(normalized_X[train], y[train])
+                     hidden_layer_sizes=(15,), random_state=1).fit(normalized_X[train], y[train])
     predictions = clf.predict(normalized_X[test])
     accuracy = clf.score(normalized_X[test], y[test])
     cm = confusion_matrix(y[test], predictions)
@@ -120,5 +119,4 @@ for train, test in kfold.split(normalized_X):
     fold_index += 1
 
 ####################################################
-
 

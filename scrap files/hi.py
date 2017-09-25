@@ -1,10 +1,17 @@
-print "hello"
+# description of this dataset http://groupware.les.inf.puc-rio.br/har
+from sklearn import datasets
+from sklearn import preprocessing as pp
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score
+import numpy
+import csv
+import pandas as pd
 
-for num in range(10,20):  #to iterate between 10 to 20
-   for i in range(2,num): #to iterate on the factors of the number
-      if num%i == 0:      #to determine the first factor
-         j=num/i          #to calculate the second factor
-         print '%d equals %d * %d' % (num,i,j)
-         break #to move to the next number, the #first FOR
-   else:                  # else part of the loop
-      print num, 'is a prime number'
+le = pp.LabelEncoder() 
+le.fit(['sitting', 'walking', 'sittingdown', 'standing', 'standingup'])
+
+data = numpy.genfromtxt('subset.csv', delimiter=";", dtype="string") # for the original sample, should skip 1 line
+targets = numpy.genfromtxt('subset_target.csv')

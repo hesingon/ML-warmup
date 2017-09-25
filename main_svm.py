@@ -1,10 +1,11 @@
-# description of this dataset http://groupware.les.inf.puc-rio.br/har
+# description of this dataset http://groupware.les.inf.puc-rio.br/har#ixzz2PyRdbAfA
 from sklearn import datasets
 from sklearn import preprocessing as pp
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score
 import numpy
 import csv
 import pandas as pd
@@ -39,7 +40,7 @@ targets = numpy.genfromtxt('subset_target.csv')
 ## Step 0, Data Segmentation
 ## ~~~~ Need to modify segmentation
 
-def segment_signal(data, window_size=2): #each set of data is taken 150ms apart from another.
+def segment_signal(data, window_size=5): #each set of data is taken 150ms apart from another.
 
     N = data.shape[0]
     dim = data.shape[1]
@@ -47,23 +48,24 @@ def segment_signal(data, window_size=2): #each set of data is taken 150ms apart 
     segments = numpy.empty((K, window_size, dim))
     for i in range(K):
         segment = data[i*window_size:i*window_size+window_size,:]
+        # extracting out from (i*w_s)th row to ((i+1)*w_s)th row.
         segments[i] = numpy.vstack(segment)
     return segments
 
 segs = segment_signal(data)
 
-# #test
-# print type(segs)
-# print segs.shape
-# print segs
+# test
+print type(segs)
+print segs.shape
+print segs
 ####################################################
 
 
 ## Step 1, Data-Preprosessing
 
-X = data
-y = targets
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) 
+# X = data
+# y = targets
+# X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) 
 # taken from sklearn's confusion matrix example
 
 # #test
@@ -83,7 +85,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 # print X_test.shape
 # print X_test
 
-normalized_X = pp.normalize(X)
+# normalized_X = pp.normalize(X)
 
 
 ####################################################
@@ -101,22 +103,25 @@ normalized_X = pp.normalize(X)
 
 ####################################################
 
+# The recall is the ratio tp / (tp + fn) where tp is the number of true positives and fn the number of false negatives. 
+# The recall is intuitively the ability of the classifier to find all the positive samples.
 
 ## Step 3: Evaluated the model
 
-kfold = KFold(n_splits=10, shuffle=True)
+# kfold = KFold(n_splits=10, shuffle=True)
 
-fold_index = 0
-for train, test in kfold.split(normalized_X):
-    svm = SVC(kernel = 'linear', C = 1).fit(normalized_X[train], y[train])
-    svm_predictions = svm.predict(normalized_X[test])
-    accuracy = svm.score(normalized_X[test], y[test])
-    cm = confusion_matrix(y[test], svm_predictions)
+# fold_index = 0
+# for train, test in kfold.split(normalized_X):
+#     svm = SVC(kernel = 'linear', C = 50).fit(normalized_X[train], y[train])
+#     svm_predictions = svm.predict(normalized_X[test])
+#     recall = recall_score(y[test], svm_predictions, average='macro') # 
+#     accuracy = svm.score(normalized_X[test], y[test])
+#     cm = confusion_matrix(y[test], svm_predictions)
 
-    print('In the %i fold, the classification accuracy is %f' %(fold_index, accuracy))
-    print('And the confusion matrix is: ')
-    print(cm)
-    fold_index += 1
+#     print('In the %i fold, the classification accuracy is %f and the recall is %f' %(fold_index, accuracy, recall))
+#     print('And the confusion matrix is: ')
+#     print(cm)
+#     fold_index += 1
 
 ####################################################
 
