@@ -5,41 +5,36 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score
 import numpy
 import csv
 import pandas as pd
+import time
 
-# ### NOTES: RANGE OF VALUES CORRESPONDING TO TARGET 
-#     2 ~ 50632: 0; 
-#     50633 ~ 62459: 2; 
-#     62460 ~ 109829: 3; 
-#     109830 ~ 122243: 4; 
-#     122244 ~ 165633: 1;
-
-
-#About labelEncoder
-#http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder.fit
 le = pp.LabelEncoder() 
 le.fit(['sitting', 'walking', 'sittingdown', 'standing', 'standingup'])
 
-data = numpy.genfromtxt('subset.csv', delimiter=";", dtype="string") # for the original sample, should skip 1 line
-targets = numpy.genfromtxt('subset_target.csv')
+initial = time.time()
+### Retrieving all data
+overall = pd.read_csv("./dataset-har-PUC-Rio-ugulino.csv", delimiter=';', header='infer') 
+data = overall.loc[:, "x1":"z4"].as_matrix() # has to be converted to ndarray in order to be processed by segment_signal()
+targets = overall.loc[:,"class,,"].as_matrix() # double commas: looks like the researchers are naughty
 
-## Display the data to verify the data and targets have the correct number of dimensions.
+load = time.time()
+print "--- time to load and select datasets: %s seconds ---" % (load - initial)
 
-print type(data)
-print data.shape
-print data
 
-print type(targets)
-print targets.shape
-print targets
-###############################################
+### Data segmentation: shall use a sudden change of sensor readings
+### like if (x_pre - x_curr <= 1.0, do nothing)
+### Range of Accelerometer sensor readings is +3g/-3g
 
-## Step 0, Data Segmentation
-## ~~~~ Need to modify segmentation
+# reading 14 sets of data in every 2 seconds. 
+# For segmenting the data from online only. 
+# each set of data is taken 150ms apart from another.
+# so choosing a window size of 14 will be 2.1 seconds.
 
-def segment_signal(data, window_size=2): #each set of data is taken 150ms apart from another.
+
+def segment_signal(data, window_size=14): 
 
     N = data.shape[0]
     dim = data.shape[1]
@@ -50,67 +45,71 @@ def segment_signal(data, window_size=2): #each set of data is taken 150ms apart 
         segments[i] = numpy.vstack(segment)
     return segments
 
-segs = segment_signal(data)
-
-# #test
-# print type(segs)
-# print segs.shape
-# print segs
-####################################################
-
-## Step 1, Data-Preprosessing
-
-X = data
-y = targets
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) 
-# taken from sklearn's confusion matrix example
-
-# #test
-# print type(X_train)
-# print X_train.shape
-# print X_train
-
-# print type(X_test)
-# print X_test.shape
-# print X_test
-
-# print type(y_train)
-# print y_train.shape
-# print y_train
-
-# print type(X_test)
-# print X_test.shape
-# print X_test
-
-normalized_X = pp.normalize(X)
 
 
-####################################################
+##!!!! questions: for normalization, should it be done right after loading csv or after segmenation? 
+##!!!! Normalize() can't process nadarray with dimension > 2.
+X = pp.normalize(data)
+y = targets[::14] 
+y = y[:-1]# -1 because it will have a extra set of data than X.
 
+normalizing = time.time()
+print "--- time to normalize: %s seconds ---" % (normalizing - load)
 
-## Step 2, Model Selection
+segs = segment_signal(X)
 
+segmenting = time.time()
+print "--- time to segment: %s seconds ---" % (segmenting - normalizing)
 
-# svm = SVC(kernel = 'linear', C = 1).fit(X_train, y_train)
-# svm_predictions = svm.predict(X_test)  
-# ## ! Test result is now stored in svm_predictions
+### feautre extraction // take the difference between sensors
 
-# #test
-# print svm_predictions
+### this method is to extract the difference between consecutive sensor readings.
+## parameter raw is a 2D ndarray
+## return a 2D ndarray
+def extract_diff(raw):
 
-####################################################
+    N = raw.shape[0] # number of sets of sensor readings
+    dim = raw.shape[1] # number of values in each readings
+    features = numpy.empty((N - 1, dim))
+    for i in range(1, N):
+        for j in range(dim):
+            features[i-1][j] = raw[i][j] - raw[i-1][j]
 
+    return features
 
-## Step 3: Evaluated the model
+def extract_diff_2(raw):
 
+    N = raw.shape[0] # number of segments of sensor readings ()
+    I = raw.shape[1] # number of sets of readings (14)
+    J = raw.shape[2] # number of values in each set of readings (12)
+    feature_num = (I - 1) * J
+    feature = numpy.empty((feature_num))
+    features = numpy.empty((N, feature_num))
+    for n in range(N):
+        idx = 0;
+        for i in range(1, I):
+            for j in range(J):
+                feature[idx] = raw[n][i][j] - raw[n][i-1][j]
+                idx += 1
+        features[n] = feature
+        
+
+    return features
+
+features = extract_diff_2(segs)
+
+extracting_feature = time.time()
+print "--- time to extract features: %s seconds ---" % (extracting_feature - segmenting)
+
+#having 15 neurons
 kfold = KFold(n_splits=10, shuffle=True)
 
 fold_index = 0
-for train, test in kfold.split(normalized_X):
+for train, test in kfold.split(features):
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5,
-                     hidden_layer_sizes=(15,), random_state=1).fit(normalized_X[train], y[train])
-    predictions = clf.predict(normalized_X[test])
-    accuracy = clf.score(normalized_X[test], y[test])
+                     hidden_layer_sizes=(15, 10), random_state=1).fit(features[train], y[train])
+    predictions = clf.predict(features[test])
+    accuracy = clf.score(features[test], y[test])
     cm = confusion_matrix(y[test], predictions)
 
     print('In the %i fold, the classification accuracy is %f' %(fold_index, accuracy))
@@ -118,5 +117,9 @@ for train, test in kfold.split(normalized_X):
     print(cm)
     fold_index += 1
 
-####################################################
+
+evaluate_model = time.time()
+print "--- time to extract features: %s seconds ---" % (evaluate_model - extracting_feature)
+
+
 
