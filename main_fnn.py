@@ -101,13 +101,15 @@ features = extract_diff_2(segs)
 extracting_feature = time.time()
 print "--- time to extract features: %s seconds ---" % (extracting_feature - segmenting)
 
+layer_1_val = 15
+layer_2_val = 10
+
 #having 15 neurons
 kfold = KFold(n_splits=10, shuffle=True)
-
 fold_index = 0
 for train, test in kfold.split(features):
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5,
-                     hidden_layer_sizes=(15, 10), random_state=1).fit(features[train], y[train])
+                     hidden_layer_sizes=(layer_1_val, layer_2_val), random_state=1).fit(features[train], y[train])
     predictions = clf.predict(features[test])
     accuracy = clf.score(features[test], y[test])
     cm = confusion_matrix(y[test], predictions)
