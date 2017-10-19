@@ -63,9 +63,9 @@ print segs
 
 ## Step 1, Data-Preprosessing
 
-# X = data
-# y = targets
-# X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) 
+X = data
+y = targets
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) 
 # taken from sklearn's confusion matrix example
 
 # #test
@@ -108,20 +108,20 @@ print segs
 
 ## Step 3: Evaluated the model
 
-# kfold = KFold(n_splits=10, shuffle=True)
+kfold = KFold(n_splits=10, shuffle=True)
 
-# fold_index = 0
-# for train, test in kfold.split(normalized_X):
-#     svm = SVC(kernel = 'linear', C = 50).fit(normalized_X[train], y[train])
-#     svm_predictions = svm.predict(normalized_X[test])
-#     recall = recall_score(y[test], svm_predictions, average='macro') # 
-#     accuracy = svm.score(normalized_X[test], y[test])
-#     cm = confusion_matrix(y[test], svm_predictions)
+fold_index = 0
+for train, test in kfold.split(normalized_X):
+    svm = SVC(kernel = 'linear', C = 50).fit(normalized_X[train], y[train])
+    svm_predictions = svm.predict(normalized_X[test])
+    recall = recall_score(y[test], svm_predictions, average='macro') # 
+    accuracy = svm.score(normalized_X[test], y[test])
+    cm = confusion_matrix(y[test], svm_predictions)
 
-#     print('In the %i fold, the classification accuracy is %f and the recall is %f' %(fold_index, accuracy, recall))
-#     print('And the confusion matrix is: ')
-#     print(cm)
-#     fold_index += 1
+    print('In the %i fold, the classification accuracy is %f and the recall is %f' %(fold_index, accuracy, recall))
+    print('And the confusion matrix is: ')
+    print(cm)
+    fold_index += 1
 
 ####################################################
 

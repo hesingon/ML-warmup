@@ -101,10 +101,93 @@ features = extract_diff_2(segs)
 extracting_feature = time.time()
 print "--- time to extract features: %s seconds ---" % (extracting_feature - segmenting)
 
+
+#################################################################################################################################
+#### generate data
+##################################################################################################################################
+
+import random
+def gen_wavehands():
+    data = []
+    for j in range(156):
+        data.append(random.uniform(0,2))
+    return data, "walking"
+
+def gen_busdriver():
+    data = []
+    for j in range(156):
+        data.append(random.uniform(-1,0))
+    return data, "busdriver"
+
+def gen_frontback():
+    data = []
+    for j in range(156):
+        data.append(random.uniform(-3,-1))
+    return data, "fontback"
+
+def gen_sidestep():
+    data = []
+    for j in range(156):
+        data.append(random.uniform(-6,-3))
+    return data, "sidestep"
+
+# def gen_jumping():
+#     data = []
+#     for j in range(156):
+#         data.append(random.uniform(-2,2))
+#     return data, "walking"
+
+# def gen_jumpingjack():
+#     data = []
+#     for j in range(156):
+#         data.append(random.uniform(-2,2))
+#     return data, "walking"
+
+# def gen_turnclap():
+#     data = []
+#     for j in range(156):
+#         data.append(random.uniform(-2,2))
+#     return data, "walking"
+
+# def gen_squatturnclap():
+#     data = []
+#     for j in range(156):
+#         data.append(random.uniform(-2,2))
+#     return data, "walking"
+
+data_list = []
+label_list = []
+# for i in range(500):
+#     data, label = gen_()
+#     data_list.append(data)
+#     label_list.append(label)
+for i in range (500):
+    data, label = gen_busdriver()
+    data_list.append(data)
+    label_list.append(label)
+for i in range(500):
+    data, label = gen_frontback()
+    data_list.append(data)
+    label_list.append(label)
+for i in range (500):
+    data, label = gen_sidestep()
+    data_list.append(data)
+    label_list.append(label)
+    
+#     [data_list, label_list]
+# print type(data_list).shape
+np.asarray(data_list).shape
+# np.asarray(label_list).shape
+
+# np.asarray(label_list).shape
+
+############################################################################################################################
+
+
 layer_1_val = 15
 layer_2_val = 10
-
-#having 15 neurons
+################################################################
+####having 15 neurons
 kfold = KFold(n_splits=10, shuffle=True)
 fold_index = 0
 for train, test in kfold.split(features):
@@ -118,6 +201,24 @@ for train, test in kfold.split(features):
     print('And the confusion matrix is: ')
     print(cm)
     fold_index += 1
+#############################################################
+##### Choose by uncommenting on either one
+#############################################################
+# kfold = KFold(n_splits=10, shuffle=True)
+
+# fold_index = 0
+# for train, test in kfold.split(features):
+#     svm = SVC(kernel = 'linear', C = 50).fit(features[train], y[train])
+#     svm_predictions = svm.predict(features[test])
+#     recall = recall_score(y[test], svm_predictions, average='macro') # 
+#     accuracy = svm.score(features[test], y[test])
+#     cm = confusion_matrix(y[test], svm_predictions)
+
+#     print('In the %i fold, the classification accuracy is %f and the recall is %f' %(fold_index, accuracy, recall))
+#     print('And the confusion matrix is: ')
+#     print(cm)
+#     fold_index += 1
+################################################################
 
 
 evaluate_model = time.time()
