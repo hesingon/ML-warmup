@@ -8,6 +8,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from sklearn import preprocessing as pp
 
+import cPickle as pickle
 
 WAVEHANDS = 0
 BUSDRIVER = 1
@@ -95,6 +96,10 @@ layer_3_val = 25
 # Fit into model
 clf = MLPClassifier(solver='sgd', alpha=1e-5, max_iter=500,
                  hidden_layer_sizes=(layer_1_val, layer_2_val, layer_3_val), random_state=1).fit(training, label)
+
+
+pickle.dump( clf, open("model40.pkl", "wb"))
+
 
 # Preprocess sample 2
 testing = pp.normalize(np.array(training3))
