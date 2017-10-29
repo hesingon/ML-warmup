@@ -66,7 +66,7 @@ training3, label3 = fast_convert('./training3.xlsx')
 
 # training = pp.normalize(np.array(training1 + training2))
 # label = np.array(label1+label2)
-
+#
 # layer_1_val = 40
 # layer_2_val = 20
 # layer_3_val = 25
